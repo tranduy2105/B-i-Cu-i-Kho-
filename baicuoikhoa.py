@@ -40,14 +40,23 @@ class FinancialApp:
         self.add_button = ttk.Button(self.root, text="Thêm Giao Dịch", command=self.add_transaction)
         self.add_button.pack(pady=10)
 
-        self.tree = ttk.Treeview(self.root, columns=("date", "type", "description", "amount"))
-        self.tree.heading("#1", text="Ngày")
-        self.tree.heading("#2", text="Loại")
-        self.tree.heading("#3", text="Mô tả")
-        self.tree.heading("#4", text="Số tiền")
+        self.tree = ttk.Treeview(self.root, columns=("index", "date", "type", "description", "amount"))
+        self.tree.heading("#1", text="STT")
+        self.tree.heading("#2", text="Ngày")
+        self.tree.heading("#3", text="Loại")
+        self.tree.heading("#4", text="Mô tả")
+        self.tree.heading("#5", text="Số tiền")
         self.tree.pack()
 
         self.load_data()
+
+        self.find_history_label = ttk.Label(self.root, text="Tìm lịch sử giao dịch theo ngày:")
+        self.find_history_label.pack()
+        self.find_history_entry = ttk.Entry(self.root)
+        self.find_history_entry.pack()
+
+        self.find_history_button = ttk.Button(self.root, text="Tìm lịch sử", command=self.find_history)
+        self.find_history_button.pack()
 
     def add_transaction(self):
         date = self.date_entry.get()
@@ -67,10 +76,24 @@ class FinancialApp:
 
         self.clear_entries()
 
+    def find_history(self):
+        date = self.find_history_entry.get()
+        matching_indices = []
+        for index, transaction in enumerate(self.transactions):
+            if date in transaction["date"]:
+                matching_indices.append(index)
+        self.highlight_matching_indices(matching_indices)
+
+    def highlight_matching_indices(self, indices):
+        self.tree.selection_remove(self.tree.get_children())
+        for index in indices:
+            item = self.tree.get_children()[index]
+            self.tree.selection_add(item)
+
     def update_treeview(self):
         self.tree.delete(*self.tree.get_children())
-        for transaction in self.transactions:
-            self.tree.insert("", "end", values=(transaction["date"], transaction["type"], transaction["description"], transaction["amount"]))
+        for index, transaction in enumerate(self.transactions, start=1):
+            self.tree.insert("", "end", text=index, values=(index, transaction["date"], transaction["type"], transaction["description"], transaction["amount"]))
 
     def save_data(self):
         with open(DATA_FILE, "w") as file:
@@ -89,6 +112,7 @@ class FinancialApp:
         self.type_entry.delete(0, tk.END)
         self.description_entry.delete(0, tk.END)
         self.amount_entry.delete(0, tk.END)
+        self.find_history_entry.delete(0, tk.END)
 
 if __name__ == "__main__":
     root = tk.Tk()
