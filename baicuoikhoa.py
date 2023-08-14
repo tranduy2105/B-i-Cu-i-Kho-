@@ -1,90 +1,96 @@
-import json
 import tkinter as tk
 from tkinter import ttk
+import json
 
-DATA_FILE = "data_tai_khoan.json"
+DATA_FILE = "financial_data.json"
 
-def read_data():
-    try:
-        with open(DATA_FILE, "r", encoding="utf-8") as myfile:
-            return json.load(myfile)
-    except:
-        return []
+class FinancialApp:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Quản lý Sổ Thu Chi")
 
-def clear_tree_view(mytree):
-    for item in mytree.get_children():
-        mytree.delete(item)
+        self.transactions = []
 
-def load_account_data(mytreeview, data=None):
-    clear_tree_view(mytreeview)
-    if data is None:
-        data = read_data()        
-    for item in data:
-        mytreeview.insert(parent='', index='end', values=(
-            item['ten_app'], item['ten_dang_nhap'], item['mat_khau'], item['chu_tk'], item['tinh_trang']
-        ))
+        self.create_widgets()
 
-def add_account():
-    new_account = {
-        "ten_app": tenapp.get(),
-        "ten_dang_nhap": tendnh.get(),
-        "mat_khau": matkhau.get(),
-        "chu_tk": chutk.get(),
-        "tinh_trang": tinhtrang.get()
-    }
-    data = read_data()
-    data.append(new_account)
-    load_account_data(tree, data)
+    def create_widgets(self):
+        self.label = ttk.Label(self.root, text="Sổ Thu Chi")
+        self.label.pack(pady=10)
 
-root = tk.Tk()
-root.title("Quản lý tài khoản")
-root.geometry("1000x400")
+        self.date_label = ttk.Label(self.root, text="Ngày:")
+        self.date_label.pack()
+        self.date_entry = ttk.Entry(self.root)
+        self.date_entry.pack()
 
-# Frames
-list_hh_frame = ttk.Frame(root)
-list_button_frame = ttk.Frame(root)
-input_hh_frame = ttk.Frame(root)
-list_hh_frame.grid(row=0, column=0)
-list_button_frame.grid(row=1, column=0)
-input_hh_frame.grid(row=2, column=0)
+        self.type_label = ttk.Label(self.root, text="Loại (Thu/Chi):")
+        self.type_label.pack()
+        self.type_entry = ttk.Entry(self.root)
+        self.type_entry.pack()
 
-# Treeview
-columns = ('ten_app', 'ten_dang_nhap', 'mat_khau', 'chu_tk', 'tinh_trang')
-tree = ttk.Treeview(list_hh_frame, columns=columns, show='headings')
-tree.heading('ten_app', text='Tên App')
-tree.heading('ten_dang_nhap', text='Tên Đăng Nhập')
-tree.heading('mat_khau', text='Mật Khẩu')
-tree.heading('chu_tk', text='Chủ Tài Khoản')
-tree.heading('tinh_trang', text='Tình Trạng')
-tree.pack()
+        self.description_label = ttk.Label(self.root, text="Mô tả:")
+        self.description_label.pack()
+        self.description_entry = ttk.Entry(self.root)
+        self.description_entry.pack()
 
-# Buttons
-ttk.Button(list_button_frame, text="Xóa danh sách", command=lambda: clear_tree_view(tree)).grid(row=0, column=0, padx=5, pady=5)
-ttk.Button(list_button_frame, text="Lấy danh sách", command=lambda: load_account_data(tree)).grid(row=0, column=1, padx=5, pady=5)
-ttk.Button(list_button_frame, text="Thêm", command=add_account).grid(row=0, column=2, padx=5, pady=5)
-ttk.Button(list_button_frame, text="Xóa").grid(row=0, column=3, padx=5, pady=5)
-ttk.Button(list_button_frame, text="Cập nhật").grid(row=0, column=4, padx=5, pady=5)
+        self.amount_label = ttk.Label(self.root, text="Số tiền:")
+        self.amount_label.pack()
+        self.amount_entry = ttk.Entry(self.root)
+        self.amount_entry.pack()
 
-# Input Fields
-ttk.Label(input_hh_frame, text="Tên App").grid(row=0, column=0)
-tenapp = ttk.Entry(input_hh_frame)
-tenapp.grid(row=0, column=1)
+        self.add_button = ttk.Button(self.root, text="Thêm Giao Dịch", command=self.add_transaction)
+        self.add_button.pack(pady=10)
 
-ttk.Label(input_hh_frame, text="Tên Đăng Nhập").grid(row=1, column=0)
-tendnh = ttk.Entry(input_hh_frame)
-tendnh.grid(row=1, column=1)
+        self.tree = ttk.Treeview(self.root, columns=("date", "type", "description", "amount"))
+        self.tree.heading("#1", text="Ngày")
+        self.tree.heading("#2", text="Loại")
+        self.tree.heading("#3", text="Mô tả")
+        self.tree.heading("#4", text="Số tiền")
+        self.tree.pack()
 
-ttk.Label(input_hh_frame, text="Mật Khẩu").grid(row=2, column=0)
-matkhau = ttk.Entry(input_hh_frame)
-matkhau.grid(row=2, column=1)
+        self.load_data()
 
-ttk.Label(input_hh_frame, text="Chủ Tài Khoản").grid(row=3, column=0)
-chutk = ttk.Entry(input_hh_frame)
-chutk.grid(row=3, column=1)
+    def add_transaction(self):
+        date = self.date_entry.get()
+        transaction_type = self.type_entry.get()
+        description = self.description_entry.get()
+        amount = self.amount_entry.get()
 
-ttk.Label(input_hh_frame, text="Tình Trạng").grid(row=4, column=0)
-tinhtrang = ttk.Entry(input_hh_frame)
-tinhtrang.grid(row=4, column=1)
+        self.transactions.append({
+            "date": date,
+            "type": transaction_type,
+            "description": description,
+            "amount": amount
+        })
 
-load_account_data(tree)
-root.mainloop()
+        self.update_treeview()
+        self.save_data()
+
+        self.clear_entries()
+
+    def update_treeview(self):
+        self.tree.delete(*self.tree.get_children())
+        for transaction in self.transactions:
+            self.tree.insert("", "end", values=(transaction["date"], transaction["type"], transaction["description"], transaction["amount"]))
+
+    def save_data(self):
+        with open(DATA_FILE, "w") as file:
+            json.dump(self.transactions, file)
+
+    def load_data(self):
+        try:
+            with open(DATA_FILE, "r") as file:
+                self.transactions = json.load(file)
+                self.update_treeview()
+        except FileNotFoundError:
+            pass
+
+    def clear_entries(self):
+        self.date_entry.delete(0, tk.END)
+        self.type_entry.delete(0, tk.END)
+        self.description_entry.delete(0, tk.END)
+        self.amount_entry.delete(0, tk.END)
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = FinancialApp(root)
+    root.mainloop()
