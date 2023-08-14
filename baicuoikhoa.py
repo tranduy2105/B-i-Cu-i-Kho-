@@ -58,6 +58,9 @@ class FinancialApp:
         self.find_history_button = ttk.Button(self.root, text="Tìm lịch sử", command=self.find_history)
         self.find_history_button.pack()
 
+        self.delete_history_button = ttk.Button(self.root, text="Xoá lịch sử giao dịch", command=self.delete_history)
+        self.delete_history_button.pack()
+
     def add_transaction(self):
         date = self.date_entry.get()
         transaction_type = self.type_entry.get()
@@ -89,6 +92,25 @@ class FinancialApp:
         for index in indices:
             item = self.tree.get_children()[index]
             self.tree.selection_add(item)
+
+    def delete_history(self):
+        selected_items = self.tree.selection()
+        indices_to_delete = []
+        for item in selected_items:
+            index = int(self.tree.item(item, "text")) - 1
+            indices_to_delete.append(index)
+        self.delete_transactions(indices_to_delete)
+        self.clear_selection()
+
+    def delete_transactions(self, indices):
+        indices.sort(reverse=True)
+        for index in indices:
+            del self.transactions[index]
+        self.save_data()
+        self.update_treeview()
+
+    def clear_selection(self):
+        self.tree.selection_remove(self.tree.selection())
 
     def update_treeview(self):
         self.tree.delete(*self.tree.get_children())
