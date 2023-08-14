@@ -14,33 +14,35 @@ class FinancialApp:
         self.create_widgets()
 
     def create_widgets(self):
-        self.label = ttk.Label(self.root, text="Sổ Thu Chi")
+        self.label = ttk.Label(self.root, text="Sổ Thu Chi", font=("Helvetica", 16, "bold"))
         self.label.pack(pady=10)
 
-        self.date_label = ttk.Label(self.root, text="Ngày:")
-        self.date_label.pack()
-        self.date_entry = ttk.Entry(self.root)
-        self.date_entry.pack()
+        self.info_frame = ttk.Frame(self.root)
+        self.info_frame.pack()
 
-        self.type_label = ttk.Label(self.root, text="Loại (Thu/Chi):")
-        self.type_label.pack()
-        self.type_entry = ttk.Entry(self.root)
-        self.type_entry.pack()
+        ttk.Label(self.info_frame, text="Ngày:").grid(row=0, column=0, sticky="e")
+        self.date_entry = ttk.Entry(self.info_frame)
+        self.date_entry.grid(row=0, column=1)
 
-        self.description_label = ttk.Label(self.root, text="Mô tả:")
-        self.description_label.pack()
-        self.description_entry = ttk.Entry(self.root)
-        self.description_entry.pack()
+        ttk.Label(self.info_frame, text="Loại (Thu/Chi):").grid(row=1, column=0, sticky="e")
+        self.type_entry = ttk.Entry(self.info_frame)
+        self.type_entry.grid(row=1, column=1)
 
-        self.amount_label = ttk.Label(self.root, text="Số tiền:")
-        self.amount_label.pack()
-        self.amount_entry = ttk.Entry(self.root)
-        self.amount_entry.pack()
+        ttk.Label(self.info_frame, text="Mô tả:").grid(row=2, column=0, sticky="e")
+        self.description_entry = ttk.Entry(self.info_frame)
+        self.description_entry.grid(row=2, column=1)
+
+        ttk.Label(self.info_frame, text="Số tiền:").grid(row=3, column=0, sticky="e")
+        self.amount_entry = ttk.Entry(self.info_frame)
+        self.amount_entry.grid(row=3, column=1)
 
         self.add_button = ttk.Button(self.root, text="Thêm Giao Dịch", command=self.add_transaction)
         self.add_button.pack(pady=10)
 
-        self.tree = ttk.Treeview(self.root, columns=("index", "date", "type", "description", "amount"))
+        self.tree_frame = ttk.Frame(self.root)
+        self.tree_frame.pack()
+
+        self.tree = ttk.Treeview(self.tree_frame, columns=("index", "date", "type", "description", "amount"))
         self.tree.heading("#1", text="STT")
         self.tree.heading("#2", text="Ngày")
         self.tree.heading("#3", text="Loại")
@@ -60,6 +62,9 @@ class FinancialApp:
 
         self.delete_history_button = ttk.Button(self.root, text="Xoá lịch sử giao dịch", command=self.delete_history)
         self.delete_history_button.pack()
+
+        self.save_all_button = ttk.Button(self.root, text="Lưu tất cả lịch sử", command=self.save_all_transactions)
+        self.save_all_button.pack()
 
     def add_transaction(self):
         date = self.date_entry.get()
@@ -119,6 +124,10 @@ class FinancialApp:
 
     def save_data(self):
         with open(DATA_FILE, "w") as file:
+            json.dump(self.transactions, file)
+
+    def save_all_transactions(self):
+        with open("all_transactions.json", "w") as file:
             json.dump(self.transactions, file)
 
     def load_data(self):
